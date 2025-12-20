@@ -1,0 +1,15 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# DVC cache
+.dvc/cache
+
+# MLflow
+mlruns/
+
+# OS files
+.DS_Store
