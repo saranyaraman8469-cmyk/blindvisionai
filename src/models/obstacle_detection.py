@@ -1,27 +1,25 @@
-import torch
-import torch.nn as nn
+import cv2
 
-class ObstacleDetector(nn.Module):
-    def __init__(self):
-        super().__init__()
+def detect_obstacle():
+    cap = cv2.VideoCapture(0)
 
-        self.model = nn.Sequential(
-            nn.Conv2d(3, 16, 3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, 3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Flatten(),
-            nn.Linear(32 * 56 * 56, 128),
-            nn.ReLU(),
-            nn.Linear(128, 4)  # bounding box output
-        )
+    ret, frame = cap.read()
+    cap.release()
 
-    def forward(self, x):
-        return self.model(x)
+    if not ret:
+        return None, None
 
+    height, width, _ = frame.shape
 
-if __name__ == "__main__":
-    model = ObstacleDetector()
-    dummy = torch.randn(1, 3, 224, 224)
-    output = model(dummy)
-    print("Obstacle detected:", output)
+    # Simple heuristic (center region)
+    center_region = frame[:, width//3:2*width//3]
+    gray = cv2.cvtColor(center_region, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (21, 21), 0)
+
+    mean_intensity = blur.mean()
+
+    # Fake distance approximation
+    distance = 1.5 if mean_intensity > 120 else 0.6
+    direction = "front"
+
+    return distance, direction
